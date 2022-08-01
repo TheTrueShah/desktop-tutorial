@@ -1,0 +1,51 @@
+---
+title: "Alzheimer_Project_Graphs"
+author: "Rustin Jafarkhnai"
+date: "2022-08-01"
+output: html_document
+---
+
+```{r}
+alzheimer<-readr::read_csv('alzheimer_data.csv')
+```
+
+```{r}
+alzheimer<-mutate(alzheimer, thippo =lhippo + rhippo)
+vthippo<-alzheimer$thippo
+icvolume<-alzheimer$naccicv
+tiratio1<-vthippo/icvolume
+```
+
+```{r}
+diagnosises <- factor(alzheimer$diagnosis, labels = c("No AD",'Has AD',"Has AD"))
+ggplot(alzheimer, aes(y=tiratio, x=age, col=diagnosises)) + 
+  geom_point()+
+  scale_color_brewer(palette="Dark2",type="qual")+
+  geom_smooth(method=lm)+
+  theme_bw()+
+  ylab("Hippocampus over total volume")
+```
+
+```{r}
+
+tempvar1 = filter(alzheimer, diagnosis != 0)
+tempvar0 = filter(alzheimer, diagnosis == 0)
+mean1 <- mean(tempvar1$tiratio)
+mean2 <- mean(tempvar0$tiratio)
+```
+
+```{r}
+diagonises <- factor(alzheimer$diagnosis, labels=c('No AD', 'Has AD', 'Has AD'))
+ggplot(alzheimer, aes(x=tiratio)) +
+  geom_histogram(aes(y=..count../sum(..count..),fill = factor(diagonises)))+
+  scale_color_brewer(palette = "Pastel1",
+                     type = qual)+ #looks at different colors
+  theme_bw()+
+  geom_vline(xintercept = mean2, color = "green", size=1.5, linetype = "longdash")+
+  geom_vline(xintercept = mean1, color = "purple4", size=1.5, linetype = 5) +
+  geom_text(x=0.006, y=0.13, label = "No AD mean (0.0047)", color = "green")+
+  geom_text(x=0.0029, y=0.11, label = "Has AD mean (0.00415)", color = "purple4")
+
+
+
+```
