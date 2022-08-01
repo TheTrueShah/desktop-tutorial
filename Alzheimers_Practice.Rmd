@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Loads the necessary packages and variables for the project. Also saves the alzheimer dataset to a simpler name 'alz'
 ```{r}
 library(ggplot2)
 library(tidyverse)
@@ -18,6 +19,7 @@ alz <- readr::read_csv("alzheimer_data.csv")
 attach(alz)
 ```
 
+## Creates a bar graph which compares diagnosis with gender (male and female). 
 ```{r}
 ggplot(alz, aes(x=diagnosis, fill = factor(female)))+
   geom_bar(size = 2,
@@ -27,6 +29,8 @@ ggplot(alz, aes(x=diagnosis, fill = factor(female)))+
   theme_bw()
 ```
 
+## Creates a scatterplot which compares left hippocampus volume to how old the patient is, and how the older a subject gets,
+## the smaller the left hippocampus gets.
 ```{r}
 fem <- factor(female, labels=c('male', 'female'))
 ggplot(alz, aes(x=age, y=lhippo, color = fem))+
