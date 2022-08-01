@@ -45,3 +45,9 @@ ggplot(alz, aes(x=age, y=lhippo, color = fem))+
 ```{r}
 chisq.test(fem, y = diagnosis)
 ```
+
+
+
+```{r}
+alz <- mutate(alz, thippo = rhippo + lhippo)
+```
