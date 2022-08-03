@@ -1,0 +1,246 @@
+---
+title: "Alzheimer_Project_doc_1"
+author: "Rustin Jafarkhnai"
+date: "2022-08-01"
+output: html_document
+---
+
+Question: Is the percentage of the combined volume of the hippocampuses over the total intracranial volume associated with age, and does this association change for different diagnosis?
+
+```{r}
+alzheimer<-readr::read_csv('alzheimer_data.csv')
+```
+
+```{r}
+alzheimer<-mutate(alzheimer, thippo =lhippo + rhippo)
+vthippo<-alzheimer$thippo
+alzheimer<-mutate(alzheimer, tparcort =lparcort + rparcort)
+vtparcort<-alzheimer$tparcort
+alzheimer<-mutate(alzheimer, ttempcor =ltempcor + rtempcor)
+vttempcor<-alzheimer$ttempcor
+alzheimer<-mutate(alzheimer, tcac =lcac + rcac)
+vtcac<-alzheimer$tcac
+alzheimer<-mutate(alzheimer, tent =lent + rent)
+vtent<-alzheimer$tent
+alzheimer<-mutate(alzheimer, tparhip =lparhip + rparhip)
+vtparhip<-alzheimer$tparhip
+alzheimer<-mutate(alzheimer, tposcin =lposcin + rposcin)
+vtposcin<-alzheimer$tposcin
+icvolume<-alzheimer$naccicv
+tiratio1<-vthippo/icvolume
+alzheimer <- mutate(alzheimer, tiratio = tiratio1)
+vfrcort <- alzheimer$frcort
+
+#Ttempcor
+rttempcor1<-vttempcor/icvolume
+alzheimer <- mutate(alzheimer, rttempcor = rttempcor1)
+#Tparcort
+rtparcort1<-vtparcort/icvolume
+alzheimer <- mutate(alzheimer, rtparcort = rtparcort1)
+#FrCort
+rfrcort1<-vfrcort/icvolume
+alzheimer <- mutate(alzheimer, rfrcort = rfrcort1)
+#Tcac
+rtcac1<-vtcac/icvolume
+alzheimer <- mutate(alzheimer, rtcac = rtcac1)
+#Tent
+rtent1<-vtent/icvolume
+alzheimer <- mutate(alzheimer, rtent = rtent1)
+#TParhip
+rtparhip1<-vtparhip/icvolume
+alzheimer <- mutate(alzheimer, rtparhip = rtparhip1)
+#Tposcin
+rtposcin1<-vtposcin/icvolume
+alzheimer <- mutate(alzheimer, rtposcin = rtposcin1)
+```
+
+```{r}
+diagnosises <- factor(alzheimer$diagnosis, labels = c("No AD",'Has AD',"Has AD"))
+ggplot(alzheimer, aes(y=tiratio, x=age, col=diagnosises)) + 
+  geom_point()+
+  scale_color_brewer(palette="Dark2",type="qual")+
+  geom_smooth(method=lm)+
+  theme_bw()+
+  ylab("Hippocampus over total volume")
+```
+
+
+
+``{r}
+ran <- sample(1:2700,30)
+new_data <- alzheimer[ran,]
+pairs(~thippo + frcort + tparcort + ttempcor + tcac + tent + tparhip + tposcin,
+      data=new_data,
+      main="Simple Scatterplot Matrix")
+``
+
+```{r}
+
+diagonises <- factor(alzheimer$diagnosis, labels=c('No AD', 'Has AD', 'Has AD'))
+ggplot(alzheimer, aes(x=tiratio, y = ..density..,
+                      fill = factor(diagonises)))+
+  geom_density(size = .2,
+             alpha = 2)+
+  scale_color_brewer(palette = "Pastel1",
+                     type = qual)+ #looks at different colors
+  theme_bw()
+
+```
+
+
+```{r}
+
+tempvar1 = filter(alzheimer, diagnosis != 0)
+tempvar0 = filter(alzheimer, diagnosis == 0)
+
+```
+
+```{r}
+mean1 <- mean(tempvar1$tiratio)
+mean2 <- mean(tempvar0$tiratio)
+diagonises <- factor(alzheimer$diagnosis, labels=c('No AD', 'Has AD', 'Has AD'))
+ggplot(alzheimer, aes(x=tiratio)) +
+  geom_histogram(aes(y=..count../sum(..count..),fill = factor(diagonises)))+
+  scale_color_brewer(palette = "Pastel1",
+                     type = qual)+ #looks at different colors
+  theme_bw()+
+  geom_vline(xintercept = mean2, color = "green", size=1.5, linetype = "longdash")+
+  geom_vline(xintercept = mean1, color = "purple4", size=1.5, linetype = 5) +
+  geom_text(x=0.006, y=0.13, label = "No AD mean (0.0047)", color = "green")+
+  geom_text(x=0.0029, y=0.11, label = "Has AD mean (0.00415)", color = "purple4")
+
+
+
+```
+
+```{r}
+
+graphed_data <- function(xval){
+  ggplot(alzheimer, aes(x=xval)) + 
+    geom_histogram(aes(y=..count../sum(..count..), fill = factor(diagonises)))+
+    scale_color_brewer(palette = "Pastel1", type = qual)+
+    theme_bw()+
+    geom_vline(xintercept = mean2, color = "green", size=1.5, linetype = "longdash")+
+    geom_vline(xintercept = mean1, color = "purple4", size=1.5, linetype = 5) 
+}
+```
+
+```{r}
+mean1 <- mean(tempvar1$tiratio)
+mean2 <- mean(tempvar0$tiratio)
+hippobar <- graphed_data(alzheimer$tiratio)
+hippobar
+```
+
+```{r}
+mean1 <- mean(tempvar1$rttempcor)
+mean2 <- mean(tempvar0$rttempcor)
+tempcorbar <- graphed_data(alzheimer$rttempcor)
+tempcorbar
+```
+
+```{r}
+mean1 <- mean(tempvar1$rtparcort)
+mean2 <- mean(tempvar0$rtparcort)
+parcortbar <- graphed_data(alzheimer$rtparcort)
+parcortbar
+```
+
+```{r}
+mean1 <- mean(tempvar1$rfrcort)
+mean2 <- mean(tempvar0$rfrcort)
+frcortbar <- graphed_data(alzheimer$rfrcort)
+frcortbar
+```
+```{r}
+mean1 <- mean(tempvar1$rtcac)
+mean2 <- mean(tempvar0$rtcac)
+cacbar <- graphed_data(alzheimer$rtcac)
+cacbar
+```
+
+```{r}
+mean1 <- mean(tempvar1$rtent)
+mean2 <- mean(tempvar0$rtent)
+entbar <- graphed_data(alzheimer$rtent)
+entbar
+```
+
+```{r}
+mean1 <- mean(tempvar1$rtparhip)
+mean2 <- mean(tempvar0$rtparhip)
+parhipbar <- graphed_data(alzheimer$rtparhip)
+parhipbar
+```
+
+```{r}
+mean1 <- mean(tempvar1$rtposcin)
+mean2 <- mean(tempvar0$rtposcin)
+poscinbar <- graphed_data(alzheimer$rtposcin)
+poscinbar
+```
+
+```{r}
+scatter_data<- function(yv){
+  ggplot(alzheimer, aes(x=age, y=yv, col=diagnosises)) + 
+  geom_point()+
+  scale_color_brewer(palette="Dark2",type="qual")+
+  geom_smooth(method=lm)+
+  theme_bw()
+}
+scatter_data(alzheimer$tiratio)
+```
+
+```{r}
+scatter_data(alzheimer$rttempcor)
+```
+
+```{r}
+scatter_data(alzheimer$rtparcort)
+```
+
+```{r}
+scatter_data(alzheimer$rfrcort)
+```
+
+```{r}
+scatter_data(alzheimer$rtcac)
+```
+
+```{r}
+scatter_data(alzheimer$rtent)
+```
+
+```{r}
+scatter_data(alzheimer$rtparhip)
+```
+
+```{r}
+scatter_data(alzheimer$rtposcin)
+```
+
+```{r}
+library(cowplot)
+plot_grid(scatter_data(alzheimer$tiratio), scatter_data(alzheimer$rttempcor), scatter_data(alzheimer$rtparcort), scatter_data(alzheimer$rfrcort), scatter_data(alzheimer$rtcac), scatter_data(alzheimer$rtent), scatter_data(alzheimer$rtparhip),scatter_data(alzheimer$rtposcin), labels = "AUTO")
+```
+
+```{r}
+plot_grid(hippobar, tempcorbar, parcortbar, frcortbar, cacbar, entbar, parhipbar, poscinbar, labels = "AUTO")
+```
+
+```{r}
+set.seed(sample(100000))
+sample1 <- sample(seq(1,2700,1),2200,replace = F)
+variables.alz <- alzheimer[,c("age","tiratio","rttempcor","rtcac","rtent","rtparcort","rtparhip","rtposcin")]
+variables.alz <- cbind(diagnosises,variables.alz)
+train.alz <- variables.alz[sample1,]
+test.alz <- variables.alz[-sample1,]
+
+log.diag.train <- glm(formula = factor(diagnosises) ~ age + tiratio + rttempcor + rtcac + rtent + rtparcort + rtparhip + rtposcin + rtent, family = 'binomial', data = train.alz)
+
+probability<-log.diag.train %>% 
+  predict(test.alz,type="response")
+head(probability)
+predicted.classes <- ifelse(probability > 0.5, "Has AD", "No AD")
+mean(predicted.classes == diagnosises[-sample1])
+```

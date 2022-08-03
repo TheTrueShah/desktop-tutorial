@@ -1,0 +1,30 @@
+---
+title: "Logistic regression"
+author: "Rustin Jafarkhnai"
+date: "2022-08-02"
+output: html_document
+---
+
+
+```{r}
+log.diag <- glm(formula = factor(diagnosises) ~ age + tiratio + rttempcor + rtcac + rtent + rtparcort + rtparhip + rtposcin + rtent, family = 'binomial', data = alzheimer)
+summary(log.diag)
+```
+
+```{r}
+set.seed()
+sample1 <- sample(seq(1,2700,1),2200,replace = F)
+variables.alz <- alzheimer[,c("age","tiratio","rttempcor","rtcac","rtent","rtparcort","rtparhip","rtposcin")]
+variables.alz <- cbind(diagnosises,variables.alz)
+train.alz <- variables.alz[sample1,]
+test.alz <- variables.alz[-sample1,]
+
+log.diag.train <- glm(formula = factor(diagnosises) ~ age + tiratio + rttempcor + rtcac + rtent + rtparcort + rtparhip + rtposcin + rtent, family = 'binomial', data = train.alz)
+
+probability<-log.diag.train %>% 
+  predict(test.alz,type="response")
+head(probability)
+predicted.classes <- ifelse(probability > 0.5, "Has AD", "No AD")
+mean(predicted.classes == diagnosises[-sample1])
+```
+
