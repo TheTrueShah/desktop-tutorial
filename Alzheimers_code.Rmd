@@ -1,0 +1,42 @@
+---
+title: "correlation_matrix.Rmd"
+author: "Ryan S"
+date: "2022-08-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggcorrplot)
+library(ggplot2)
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(janitor)
+library(devtools)
+```
+
+```{r}
+
+
+alz <- readr::read_csv("alzheimer_data.csv")
+
+corr <- round(cor(mtcars), 1)
+
+ggcorrplot(corr)
+
+class(alzheimer$tiratio)
+
+class(alzheimer)
+
+head(alzheimer, 6)
+```
+
+```{r}
+view(mtcars)
+```
+
+
