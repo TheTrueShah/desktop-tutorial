@@ -1,0 +1,417 @@
+---
+title: "Alzheimer_Project.Rmd"
+author: "Ryan S"
+date: "2022-08-01"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+title: "Scatterplot"
+author: "Ryan S"
+date: "2022-07-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loads the necessary packages and variables for the project. Also saves the alzheimer dataset to a simpler name 'alz'
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(janitor)
+library(dplyr)
+library(plot.matrix)
+library(expss)
+library(nnet)
+alzheimer <- read.csv("alzheimer_data.csv")
+alzheimer<-mutate(alzheimer, thippo = lhippo + rhippo)
+vthippo <- alzheimer$thippo
+alzheimer <- mutate(alzheimer, rthippo = thippo/naccicv)
+alzheimer$rthippo
+rthippo1 <- alzheimer$tiratio
+alz <- alzheimer
+```
+
+
+```{r}
+ggplot(alzheimer, aes(x = age, y=rthippo, color = diagnosis))+
+  geom_point() +
+  geom_smooth(method='lm')
+```
+
+```{r}
+
+alz$AD <- factor(alz$diagnosis, labels=c('NO', 'YES', 'YES'))
+
+ggplot(alz, aes(x=age, y=rtent, color = AD))+
+  geom_point (size = 2, shape = 20,
+              alpha = 2)+
+  geom_smooth(method=lm)+
+  theme_bw()+
+    scale_color_brewer(palette = "Dark2",
+                     type = qual)+
+  ylab("Entorhinal volume over total volume") + ggtitle("Sccaterplot of Rtent in association to Age in relation to diagnosis") +
+  theme(plot.title = element_text(hjust = 0.5)) + xlab("Age Of Patients")
+```
+
+```{r}
+alzheimer <- mutate(alzheimer, tparcort = lparcort + rparcort)
+```
+
+## Creates a bar graph which compares diagnosis with gender (male and female). 
+```{r}
+ggplot(alzheimer, aes(x=diagnosis, fill = factor(female)))+
+  geom_bar(size = 2,
+             alpha = 2, position="fill")+
+  scale_color_brewer(palette = "Pastel1",
+                     type = qual)+ #looks at different colors
+  theme_bw()
+```
+
+## Creates a scatterplot which compares left hippocampus volume to how old the patient is, and how the older a subject gets,
+## the smaller the left hippocampus gets.
+```{r}
+fem <- factor(alzheimer$female, labels=c('male', 'female'))
+ggplot(alzheimer, aes(x=age, y=lhippo, color = fem))+
+  geom_point(size = 2, shape = 16,
+             alpha = 10)+
+  geom_smooth(method=lm)+
+  scale_color_brewer(palette = "Accent",
+                     type = qual)+
+  theme_bw()
+```
+
+```{r}
+chisq.test(fem, y = alzheimer$diagnosis)
+```
+
+```{r}
+alzheimer<-mutate(alzheimer, tparcort =lparcort + rparcort)
+vtparcort<-alzheimer$tparcort
+alzheimer<-mutate(alzheimer, ttempcor =ltempcor + rtempcor)
+vttempcor<-alzheimer$ttempcor
+alzheimer<-mutate(alzheimer, tcac =lcac + rcac)
+vtcac<-alzheimer$tcac
+alzheimer<-mutate(alzheimer, tent =lent + rent)
+vtent<-alzheimer$tent
+alzheimer<-mutate(alzheimer, tparhip =lparhip + rparhip)
+vtparhip<-alzheimer$tparhip
+alzheimer<-mutate(alzheimer, tposcin =lposcin + rposcin)
+vtposcin<-alzheimer$tposcin
+
+ran <- sample(1:2700,30)
+new_data <- alzheimer[ran,]
+pairs(~thippo + frcort + tparcort + ttempcor + tcac + tent + tparhip + tposcin,
+      data=new_data,
+      main="Simple Scatterplot Matrix")
+
+```
+
+```{r}
+diagonises <- factor(alzheimer$diagnosis, labels=c('No Ad', 'Has AD', 'Has AD'))
+ggplot(alzheimer, aes(x=rthippo, y = ..density..,
+                      fill = factor(diagonises)))+
+  geom_histogram(size = .2,
+             alpha = 2)+
+  scale_color_brewer(palette = "Pastel1",
+                     type = qual)+ #looks at different colors
+  theme_bw()
+```
+
+```{r}
+AD <- factor(alzheimer$diagnosis, labels=c('No', 'Yes', 'Yes'))
+AD <- factor(AD)
+ggplot(alz, aes(x=rtposcin)) +
+  geom_histogram(aes(y=..count../sum(..count..),fill = AD),
+                 alpha = .4)+
+  scale_color_manual(values = c("red","blue"))+
+  theme_bw() + geom_vline(xintercept = mean2, linetype="longdash", 
+                color = "red", size=1.5) + geom_vline(xintercept = mean1, linetype="longdash", 
+                color = "blue", size=1.5) + xlab("posterior cingulate over total volume")
+```
+
+```{r}
+tempvar1 = filter(alz, alz$diagnosis != 0)
+tempvar0 = filter(alz, alz$diagnosis == 0)
+mean1 <- mean(tempvar1$rtposcin)
+mean2 <- mean(tempvar0$rtposcin)
+
+t.test(tempvar0$tiratio)
+t.test(tempvar0$ttempcor)
+t.test(tempvar0$frcort)
+t.test(tempvar0$tparcort)
+t.test(tempvar0$tcac)
+t.test(tempvar0$tent)
+t.test(tempvar0$tparhip)
+t.test(tempvar0$tposcin)
+t.test(tempvar0$thippo)
+t.test(tempvar0$tiratio)
+t.test(tempvar0$tiratio)
+
+(t.test(alz$rtparhip ~ alz$AD))
+(t.test(alz$rtent ~ alz$AD))
+
+t.test(alz$rthippo ~ alz$AD)
+t.test(alz$age ~ alz$AD)
+t.test(alz$educ ~ alz$AD)
+t.test(alz$rfrcort ~ alz$AD)
+t.test(alz$rttempcor ~ alz$AD)
+t.test(alz$rtcac ~ alz$AD)
+t.test(alz$rtposcin ~ alz$AD)
+t.test(alz$rparcort ~ alz$AD)
+
+
+```
+
+```{r}
+examplematrix <- matrix(runif(35), ncol=5) # create a numeric matrix object
+class(examplematrix)
+par(mar=c(5.1, 4.1, 4.1, 4.1)) # adapt margins
+plot(examplematrix)
+
+```
+
+```{r}
+icvolume <- alzheimer$naccicv
+
+#Ttempcor
+rttempcor1<-vttempcor/icvolume
+alz <- mutate(alz, rttempcor = rttempcor1)
+#Tparcort
+rtparcort1<-vtparcort/icvolume
+alz <- mutate(alz, rtparcort = rtparcort1)
+#FrCort
+rfrcort1<-alzheimer$frcort/icvolume
+alz <- mutate(alz, rfrcort = rfrcort1)
+#Tcac
+rtcac1<-vtcac/icvolume
+alz <- mutate(alz, rtcac = rtcac1)
+#Tent
+rtent1<-vtent/icvolume
+alz <- mutate(alz, rtent = rtent1)
+#TParhip
+rtparhip1<-vtparhip/icvolume
+alz <- mutate(alz, rtparhip = rtparhip1)
+#Tposcin
+rtposcin1<-vtposcin/icvolume
+alz <- mutate(alz, rtposcin = rtposcin1)
+
+
+```
+
+```{r}
+library(ggplot2)
+ggplot(data = alzheimer, aes(x=age, y=female, fill=AD)) + 
+  geom_tile()
+```
+```{r}
+alz<-mutate(alz, tparcort =lparcort + rparcort)
+vtparcort<-alzheimer$tparcort
+alz<-mutate(alz, ttempcor =ltempcor + rtempcor)
+vttempcor<-alzheimer$ttempcor
+alz<-mutate(alz, tcac =lcac + rcac)
+vtcac<-alzheimer$tcac
+alz<-mutate(alz, tent =lent + rent)
+vtent<-alzheimer$tent
+alz<-mutate(alz, tparhip =lparhip + rparhip)
+vtparhip<-alzheimer$tparhip
+alz<-mutate(alz, tposcin =lposcin + rposcin)
+vtposcin<-alzheimer$tposcin
+alz<-mutate(alz, thippo = lhippo + rhippo)
+vthippo <- alzheimer$thippo
+alz <- mutate(alz, tiratio = thippo/naccicv)
+tiratio1 <- alzheimer$tiratio
+alz_temp <- mutate(alz, ages <- alzheimer$age)
+alz_temp <- mutate(alz, education <- alzheimer$educ)
+```
+
+```{r}
+alz_temp <- data.frame(alz_temp)
+alz_temp <- alz_temp %>% select(-starts_with("rhippo"))
+```
+
+```{r}
+corr <- round(cor(alz_temp), 1)
+head(corr[, 1:6])
+p.mat <- cor_pmat(alz_temp)
+head(p.mat[, 1:4])
+ggcorrplot(corr, hc.order = TRUE, outline.col = "white", method = "square", type = "lower", ggtheme = ggplot2::theme_gray, lab = "TRUE") + ggtitle("                   Correlation Matrix")
+```
+
+```{r}
+#Ttempcor
+vhippo<-alz$thippo/icvolume
+alz<-mutate(alz, rthippo = vhippo)
+vttempcor<-alz$ttempcor/icvolume
+alz <- mutate(alz, rttempcor = vttempcor)
+vttempcor<-alz$ttempcor/icvolume
+alz <- mutate(alz, rttempcor = vttempcor)
+#Tparcort
+vtparcort<-alz$tparcort/icvolume
+alz <- mutate(alz, rparcort = vtparcort)
+#FrCort
+vfrcort<-alz$frcort/icvolume
+alz <- mutate(alz, rfrcort = vfrcort)
+#Tcac
+vtcac<-alz$tcac/icvolume
+alz <- mutate(alz, rtcac = vtcac)
+#Tent
+vtent<-alz$tent/icvolume
+alz <- mutate(alz, rtent = vtent)
+#TParhip
+vtparhip<-alz$tparhip/icvolume
+alz <- mutate(alz, rtparhip = vtparhip)
+#Tposcin
+vtposcin<-alz$tposcin/icvolume
+alz <- mutate(alz, rtposcin = vtposcin)
+
+icvolume <- alz$naccicv
+```
+
+```{r}
+summary(lm(tiratio ~ age + AD, data = alz))
+
+summary(lm(rthippo ~ age * AD, data = alz))
+
+summary(lm(alz_temp$rthippo ~ age + AD, data = alz_temp))
+
+lm(alz_temp$rthippo ~ alz_temp$age + educ, data = alz_temp)
+
+summary(glm(formula = AD ~ tiratio + age + educ, family = "binomial", data = alz_temp))
+
+chisq.test(alz_temp$tiratio)
+```
+
+
+```{r}
+linear_modeling <-function(mydata, response){
+summary(lm(response ~ age * AD, data = mydata))
+}
+
+
+
+linear_modeling(alz_temp, alz_temp$rthippo)
+linear_modeling(alz, alz_temp$rttempcor)
+linear_modeling(alz, alz_temp$rfrcort)
+linear_modeling(alz, alz_temp$rtcac)
+linear_modeling(alz, alz_temp$rtent)
+linear_modeling(alz, alz_temp$rtparhip)
+linear_modeling(alz, alz_temp$rtposcin)
+linear_modeling(alz, alz_temp$rparcort)
+
+
+
+
+
+```
+
+```{r}
+data <- alz
+
+data <- data %>%
+  mutate(disease_status = ifelse(diagnosis == 0, yes = 0, no = 1)) %>%
+  mutate(across(c(disease_status, diagnosis, female), as.factor))
+
+is.factor(data$disease_status) 
+
+table(data$disease_status,data$diagnosis)
+
+
+train <- data %>% slice_sample(n = 0.7*nrow(data))
+test <- data %>% filter(!(id %in% train$id))
+
+# Linear regression model
+
+lin_mod <- glm(lhippo ~ age + educ + rthippo + rfrcort + rtcac + rtent + rtparhip + rtposcin + rparcort + rttempcor, data = train)
+test_pred <- predict(lin_mod, newdata = test)
+plot(test$lhippo, test_pred)
+
+
+# Logistic regression model
+
+logistic_mod <- glm(disease_status ~ age + educ + rthippo + rfrcort + rtcac + rtent + rtparhip + rtposcin + rparcort + rttempcor, family = binomial,
+                    data = data)
+
+logistic_mod <- glm(disease_status ~ age + educ + rthippo + rfrcort + rtcac + rtent + rtparhip + rtposcin + rparcort + rttempcor, family = binomial,
+                    data = train)
+
+test_prob <- predict(logistic_mod, newdata = test, type = 'response')
+
+test <- test %>%
+  mutate(predicted_class = ifelse(test_prob > 0.5, 1, 0))
+
+
+table(test$disease_status, test$predicted_class)
+
+cross_cases(test, disease_status, predicted_class)
+
+mean(test$disease_status == test$predicted_class)
+
+```
+
+```{r}
+multinom(forumula = AD, data = alz)
+data$diagnosis <- relevel(data$diagnosis, ref="0")
+mymodel <- multinom(data$diagnosis~., data = alz_temp)
+```
+
+
+```{r Knit}
+data <- alz
+
+data <- data %>%
+  mutate(disease_status = ifelse(diagnosis == 0, yes = 0, no = 1)) %>%
+  mutate(across(c(disease_status, diagnosis, female), as.factor))
+
+is.factor(data$disease_status) 
+
+table(data$disease_status,data$diagnosis)
+
+
+train <- data %>% slice_sample(n = 0.7*nrow(data))
+test <- data %>% filter(!(id %in% train$id))
+
+# Linear regression model
+
+
+
+
+# Logistic regression model
+
+multinom_mod <- multinom(diagnosis ~ age + educ + rthippo + rfrcort + rtcac + rtent + rtparhip + rtposcin + rparcort + rttempcor,  data = data)
+
+summary(multinom_mod)
+
+multinom_mod <- multinom(diagnosis ~ age + educ + rthippo + rfrcort + rtcac + rtent + rtparhip + rtposcin + rparcort + rttempcor,  data = train)
+
+summary(multinom_mod)
+
+test_pred <- predict(multinom_mod, newdata = test, type = 'class')
+
+table(test$diagnosis, test_pred)
+
+mean(test$diagnosis == test_pred)
+
+```
+
+```{r}
+graphed_data <- function(xval, label){
+ggplot(alzheimer, aes(x=xval)) + 
+    geom_histogram(aes(y=..count../sum(..count..),  fill = factor(diagonises)),alpha = 0.4)+
+    scale_color_brewer(palette = "Pastel1", type = qual)+
+    theme_bw()+
+    geom_vline(xintercept = mean2, color = "red", size=1.5, linetype = "longdash")+
+    geom_vline(xintercept = mean1, color = "blue", size=1.5, linetype = 5)+
+    xlab(label)+
+    ylab("Percent of total data in each bar")
+}
+```
