@@ -1,0 +1,68 @@
+---
+title: "Train_Alzheimers"
+author: "Ryan S"
+date: "2023-01-08"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(janitor)
+library(dplyr)
+library(plot.matrix)
+library(expss)
+library(nnet)
+alzheimer <- read.csv("alzheimer_data.csv")
+alzheimer<-mutate(alzheimer, thippo = lhippo + rhippo)
+vthippo <- alzheimer$thippo
+alzheimer <- mutate(alzheimer, rthippo = thippo/naccicv)
+alzheimer$rthippo
+rthippo1 <- alzheimer$tiratio
+alz <- alzheimer
+```
+
+```{r Name}
+data <- alz
+
+data <- data %>%
+  mutate(disease_status = ifelse(diagnosis == 0, yes = 0, no = 1)) %>%
+  mutate(across(c(disease_status, diagnosis, female), as.factor))
+
+is.factor(data$disease_status) 
+
+table(data$disease_status,data$diagnosis)
+
+
+train <- data %>% slice_sample(n = 0.7*nrow(data))
+test <- data %>% filter(!(id %in% train$id))
+
+# Linear regression model
+
+
+
+
+# Logistic regression model
+
+multinom_mod <- multinom(diagnosis ~ age + educ + rhippo + frcort + rcac + rent + rparhip + rposcin + rparcort + rtempcor,  data = data)
+
+summary(multinom_mod)
+
+multinom_mod <- multinom(diagnosis ~ age + educ + rhippo + frcort + rcac + rent + rparhip + rposcin + rparcort + rtempcor,  data = train)
+
+summary(multinom_mod)
+
+test_pred <- predict(multinom_mod, newdata = test, type = 'class')
+
+table(test$diagnosis, test_pred)
+
+mean(test$diagnosis == test_pred)
+
+```
