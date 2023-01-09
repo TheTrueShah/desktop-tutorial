@@ -7,7 +7,7 @@ output: html_document
 
 
 ```{r}
-log.diag <- glm(formula = factor(diagnosises) ~ age + tiratio + rttempcor + rtcac + rtent + rtparcort + rtparhip + rtposcin + rtent, family = 'binomial', data = alzheimer)
+log.diag <- glm(formula = factor(diagnosises) ~ age + educ + tiratio + rttempcor + rtcac + rtent + rtparcort + rtparhip + rtposcin + rtent, family = 'binomial', data = alzheimer)
 summary(log.diag)
 ```
 
